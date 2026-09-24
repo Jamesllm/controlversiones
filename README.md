@@ -73,6 +73,7 @@
 | 1 | Arroyo Vega, Carlos Felipe | U23214686 |
 | 2 | Bustamante Suclupe, Carlos Andres | U23214477 |
 | 3 | Llapapasca Montes, Ronal James | U22221880 | 
+| 3 | Niñan Gonzales, Danna Jael	 | U23214477 | 
 | 5 | Tarrillo Condor, Nigson Shrimi | U23224391 | 
 
 
