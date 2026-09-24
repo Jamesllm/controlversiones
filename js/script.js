@@ -47,7 +47,7 @@ function crearObjetoUsuario({ id, nombre, email, rol }) {
 
 // Datos iniciales de prueba (Mock Data) con variables en español
 let usuarios = [
-    crearObjetoUsuario({ id: 1, nombre: "Carlos Arroyo", email: "carlo@taskuni.edu", rol: "Estudiante - Ing. Sistemas" }),
+    crearObjetoUsuario({ id: 1, nombre: "Carlos Arroyo", email: "carlos@taskuni.edu", rol: "Estudiante - Ing. Sistemas" }),
     crearObjetoUsuario({ id: 2, nombre: "Jhimi Tarrillo", email: "jhimi@taskuni.edu", rol: "Estudiante - Ing. Sistemas" }),
     crearObjetoUsuario({ id: 3, nombre: "James Llapapasca", email: "james@taskuni.edu", rol: "Estudiante - Ing. Sistemas" }),
     crearObjetoUsuario({ id: 4, nombre: "Carlos Bustamante", email: "carlosb@taskuni.edu", rol: "Estudiante - Ing. Sistemas" }),
