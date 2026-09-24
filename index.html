@@ -8,64 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome for Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #3b82f6;
-            --sidebar-width: 250px;
-        }
-        body {
-            background-color: #f8fafc;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .stat-card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            border: none;
-            border-radius: 12px;
-        }
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-        }
-        .icon-shape {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
-        .badge-status {
-            font-size: 0.8rem;
-            padding: 0.4em 0.8em;
-            border-radius: 20px;
-        }
-        .table-custom th {
-            background-color: #f1f5f9;
-            color: #475569;
-            font-weight: 600;
-            border-bottom: none;
-        }
-        .nav-pills .nav-link {
-            color: #64748b;
-            font-weight: 500;
-            border-radius: 8px;
-            padding: 0.6rem 1.2rem;
-            transition: all 0.2s;
-        }
-        .nav-pills .nav-link.active {
-            background-color: #2563eb;
-            color: white;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-        }
-        .nav-pills .nav-link:hover:not(.active) {
-            background-color: #e2e8f0;
-            color: #1e293b;
-        }
-        .toast-container {
-            z-index: 1090;
-        }
-    </style>
+    <!-- Estilos personalizados vinculados externamente -->
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
@@ -188,7 +132,7 @@
                         <h4 class="fw-bold text-dark mb-0">Gestión de Tareas</h4>
                         <p class="text-muted small mb-0">Crea, asigna y administra el ciclo de vida de tus tareas.</p>
                     </div>
-                    <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm" onclick="openTaskModal()">
+                    <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm" onclick="abrirModalTarea()">
                         <i class="fa-solid fa-plus"></i> Nueva Tarea
                     </button>
                 </div>
@@ -200,11 +144,11 @@
                             <div class="col-12 col-md-6">
                                 <div class="input-group">
                                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-search"></i></span>
-                                    <input type="text" id="taskSearchInput" class="form-control border-start-0" placeholder="Buscar por título o descripción..." oninput="renderTasks()">
+                                    <input type="text" id="taskSearchInput" class="form-control border-start-0" placeholder="Buscar por título o descripción..." oninput="renderizarTareas()">
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
-                                <select id="taskStatusFilter" class="form-select" onchange="renderTasks()">
+                                <select id="taskStatusFilter" class="form-select" onchange="renderizarTareas()">
                                     <option value="ALL">Todos los Estados</option>
                                     <option value="PENDING">Pendientes</option>
                                     <option value="COMPLETED">Completadas</option>
@@ -247,7 +191,7 @@
                                 <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-user-plus me-2 text-primary"></i>Registrar Usuario</h5>
                             </div>
                             <div class="card-body">
-                                <form id="userForm" onsubmit="handleUserSubmit(event)">
+                                <form id="userForm" onsubmit="manejarEnvioUsuario(event)">
                                     <div class="mb-3">
                                         <label for="userName" class="form-label fw-semibold text-secondary">Nombre Completo</label>
                                         <input type="text" id="userName" class="form-control" placeholder="Ej: Maria Delgado" required>
@@ -307,7 +251,7 @@
                     <h5 class="modal-title fw-bold" id="taskModalLabel">Nueva Tarea</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="taskForm" onsubmit="handleTaskSubmit(event)">
+                <form id="taskForm" onsubmit="manejarEnvioTarea(event)">
                     <div class="modal-body">
                         <input type="hidden" id="taskId">
                         <div class="mb-3">
@@ -349,309 +293,7 @@
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        // Default Mock Data
-        let users = [
-            { id: 1, name: "Carlos Mendoza", email: "carlos.m@taskuni.edu", role: "Estudiante - Ing. Software" },
-            { id: 2, name: "Ana Lucía Torres", email: "ana.torres@taskuni.edu", role: "Docente - Sistemas" }
-        ];
-
-        let tasks = [
-            { id: 1, title: "Diseño de Base de Datos", description: "Crear el diagrama Entidad-Relación para el proyecto.", userId: 1, completed: false, createdAt: new Date().toLocaleDateString() },
-            { id: 2, title: "Informe Técnico TPC", description: "Redactar la introducción y arquitectura en formato PDF.", userId: 2, completed: true, createdAt: new Date().toLocaleDateString() }
-        ];
-
-        let taskModalInstance = null;
-
-        window.addEventListener('DOMContentLoaded', () => {
-            taskModalInstance = new bootstrap.Modal(document.getElementById('taskModal'));
-            renderAll();
-        });
-
-        // Trigger updates across all views
-        function renderAll() {
-            renderDashboard();
-            renderTasks();
-            renderUsers();
-            populateUserDropdown();
-        }
-
-        function renderDashboard() {
-            const total = tasks.length;
-            const completed = tasks.filter(t => t.completed).length;
-            const pending = total - completed;
-
-            document.getElementById('dashTotalTasks').textContent = total;
-            document.getElementById('dashCompletedTasks').textContent = completed;
-            document.getElementById('dashPendingTasks').textContent = pending;
-
-            // Render Recent Tasks Table
-            const recentBody = document.getElementById('dashRecentTasksTable');
-            recentBody.innerHTML = '';
-
-            if (tasks.length === 0) {
-                recentBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">No hay tareas registradas.</td></tr>`;
-                return;
-            }
-
-            const recentTasks = [...tasks].reverse().slice(0, 5);
-            recentTasks.forEach(task => {
-                const user = users.find(u => u.id === parseInt(task.userId));
-                const userName = user ? user.name : 'Sin Asignar';
-                const statusBadge = task.completed 
-                    ? `<span class="badge bg-success-subtle text-success badge-status"><i class="fa-solid fa-circle-check me-1"></i>Completada</span>`
-                    : `<span class="badge bg-warning-subtle text-warning badge-status"><i class="fa-solid fa-clock me-1"></i>Pendiente</span>`;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="ps-4 fw-semibold text-dark">${escapeHtml(task.title)}</td>
-                    <td>${escapeHtml(userName)}</td>
-                    <td>${statusBadge}</td>
-                    <td class="pe-4 text-muted small">${task.createdAt || 'Reciente'}</td>
-                `;
-                recentBody.appendChild(tr);
-            });
-        }
-
-        function renderTasks() {
-            const tbody = document.getElementById('tasksTableBody');
-            const searchVal = document.getElementById('taskSearchInput').value.toLowerCase();
-            const statusVal = document.getElementById('taskStatusFilter').value;
-
-            tbody.innerHTML = '';
-
-            let filteredTasks = tasks.filter(t => {
-                const matchesSearch = t.title.toLowerCase().includes(searchVal) || t.description.toLowerCase().includes(searchVal);
-                const matchesStatus = statusVal === 'ALL' || 
-                                     (statusVal === 'COMPLETED' && t.completed) || 
-                                     (statusVal === 'PENDING' && !t.completed);
-                return matchesSearch && matchesStatus;
-            });
-
-            if (filteredTasks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No se encontraron tareas.</td></tr>`;
-                return;
-            }
-
-            filteredTasks.forEach(task => {
-                const user = users.find(u => u.id === parseInt(task.userId));
-                const userName = user ? user.name : 'Usuario No Encontrado';
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="ps-4 text-muted">${task.id}</td>
-                    <td>
-                        <div class="fw-bold ${task.completed ? 'text-decoration-line-through text-muted' : 'text-dark'}">${escapeHtml(task.title)}</div>
-                        <div class="small text-muted">${escapeHtml(task.description)}</div>
-                    </td>
-                    <td>
-                        <span class="badge bg-light text-dark border"><i class="fa-solid fa-user me-1 text-secondary"></i>${escapeHtml(userName)}</span>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm ${task.completed ? 'btn-success' : 'btn-outline-warning'}" onclick="toggleTaskStatus(${task.id})">
-                            <i class="fa-solid ${task.completed ? 'fa-check-circle' : 'fa-circle'} me-1"></i>
-                            ${task.completed ? 'Completada' : 'Marcar Completada'}
-                        </button>
-                    </td>
-                    <td class="text-end pe-4">
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editTask(${task.id})" title="Editar Tarea">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})" title="Eliminar Tarea">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function openTaskModal(taskId = null) {
-            const form = document.getElementById('taskForm');
-            form.reset();
-            populateUserDropdown();
-
-            if (taskId) {
-                const task = tasks.find(t => t.id === taskId);
-                if (task) {
-                    document.getElementById('taskId').value = task.id;
-                    document.getElementById('taskTitle').value = task.title;
-                    document.getElementById('taskDescription').value = task.description;
-                    document.getElementById('taskAssignedTo').value = task.userId;
-                    document.getElementById('taskModalLabel').textContent = 'Editar Tarea';
-                }
-            } else {
-                document.getElementById('taskId').value = '';
-                document.getElementById('taskModalLabel').textContent = 'Nueva Tarea';
-            }
-
-            taskModalInstance.show();
-        }
-
-        function handleTaskSubmit(e) {
-            e.preventDefault();
-            const id = document.getElementById('taskId').value;
-            const title = document.getElementById('taskTitle').value.trim();
-            const description = document.getElementById('taskDescription').value.trim();
-            const userId = parseInt(document.getElementById('taskAssignedTo').value);
-
-            if (!title || !description || isNaN(userId)) {
-                showToast("Por favor complete todos los campos.");
-                return;
-            }
-
-            if (id) {
-                // Edit Task
-                const task = tasks.find(t => t.id === parseInt(id));
-                if (task) {
-                    task.title = title;
-                    task.description = description;
-                    task.userId = userId;
-                    showToast("Tarea actualizada exitosamente.");
-                }
-            } else {
-                // Create Task
-                const newTask = {
-                    id: tasks.length ? Math.max(...tasks.map(t => t.id)) + 1 : 1,
-                    title,
-                    description,
-                    userId,
-                    completed: false,
-                    createdAt: new Date().toLocaleDateString()
-                };
-                tasks.push(newTask);
-                showToast("Tarea creada correctamente.");
-            }
-
-            taskModalInstance.hide();
-            renderAll();
-        }
-
-        function toggleTaskStatus(id) {
-            const task = tasks.find(t => t.id === id);
-            if (task) {
-                task.completed = !task.completed;
-                showToast(task.completed ? "Tarea marcada como completada." : "Tarea marcada como pendiente.");
-                renderAll();
-            }
-        }
-
-        function editTask(id) {
-            openTaskModal(id);
-        }
-
-        function deleteTask(id) {
-            if (confirm("¿Está seguro de que desea eliminar esta tarea?")) {
-                tasks = tasks.filter(t => t.id !== id);
-                showToast("Tarea eliminada.");
-                renderAll();
-            }
-        }
-
-        function renderUsers() {
-            const tbody = document.getElementById('usersTableBody');
-            document.getElementById('userCountBadge').textContent = `${users.length} usuarios`;
-            tbody.innerHTML = '';
-
-            if (users.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">No hay usuarios registrados.</td></tr>`;
-                return;
-            }
-
-            users.forEach(user => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="ps-4 fw-semibold text-dark">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                <i class="fa-solid fa-user"></i>
-                            </div>
-                            ${escapeHtml(user.name)}
-                        </div>
-                    </td>
-                    <td class="text-muted">${escapeHtml(user.email)}</td>
-                    <td><span class="badge bg-light text-dark border">${escapeHtml(user.role)}</span></td>
-                    <td class="text-end pe-4">
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})" title="Eliminar Usuario">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function handleUserSubmit(e) {
-            e.preventDefault();
-            const name = document.getElementById('userName').value.trim();
-            const email = document.getElementById('userEmail').value.trim();
-            const role = document.getElementById('userRole').value.trim();
-
-            if (!name || !email || !role) {
-                showToast("Complete todos los campos del usuario.");
-                return;
-            }
-
-            const newUser = {
-                id: users.length ? Math.max(...users.map(u => u.id)) + 1 : 1,
-                name,
-                email,
-                role
-            };
-
-            users.push(newUser);
-            document.getElementById('userForm').reset();
-            showToast("Usuario registrado exitosamente.");
-            renderAll();
-        }
-
-        function deleteUser(id) {
-            // Check if user has assigned tasks
-            const hasTasks = tasks.some(t => t.userId === id);
-            if (hasTasks) {
-                alert("No se puede eliminar el usuario porque tiene tareas asignadas. Reasigne o elimine las tareas primero.");
-                return;
-            }
-
-            if (confirm("¿Está seguro de eliminar este usuario?")) {
-                users = users.filter(u => u.id !== id);
-                showToast("Usuario eliminado.");
-                renderAll();
-            }
-        }
-
-        function populateUserDropdown() {
-            const select = document.getElementById('taskAssignedTo');
-            const currentValue = select.value;
-            select.innerHTML = '<option value="" disabled selected>Seleccione un usuario...</option>';
-
-            users.forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.value = user.id;
-                option.textContent = `${user.name} (${user.role})`;
-                select.appendChild(option);
-            });
-
-            if (currentValue) {
-                select.value = currentValue;
-            }
-        }
-
-        function showToast(message) {
-            const toastEl = document.getElementById('liveToast');
-            document.getElementById('toastMessage').textContent = message;
-            const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-            toast.show();
-        }
-
-        function escapeHtml(str) {
-            return String(str)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-    </script>
+    <!-- Lógica de la aplicación vinculada externamente -->
+    <script src="js/script.js"></script>
 </body>
 </html>
